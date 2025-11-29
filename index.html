@@ -2,79 +2,154 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Map Extract - Working Test</title>
+    <title>Map Extract</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        .upload-box {
-            border: 2px dashed #0077ff;
-            padding: 50px;
-            border-radius: 12px;
-            display: inline-block;
-            cursor: pointer;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: #f0f7ff;
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
             margin-bottom: 20px;
         }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        /* UPLOAD BOX */
+        .upload-box {
+            border: 2px dashed #0077ff;
+            border-radius: 12px;
+            padding: 50px;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            background: #f9fbff;
+        }
+
         .upload-box.dragover { background: #e0f0ff; border-color: #005fcc; }
+
         .upload-box p { margin-bottom: 20px; color: #0077ff; font-size: 18px; }
 
-        button#select-pdf {
+        /* VISIBLE FILE INPUT BUTTON */
+        #pdf-upload {
             padding: 10px 20px;
             font-size: 16px;
             border-radius: 6px;
             border: none;
-            background:#0077ff;
+            background: #0077ff;
             color: white;
             cursor: pointer;
         }
-        button#select-pdf:hover { background: #005fcc; }
+        #pdf-upload:hover { background: #005fcc; }
+
+        /* HOW IT WORKS SECTION */
+        .how-it-works {
+            padding: 60px 20px;
+            max-width: 900px;
+            margin: 50px auto 0;
+        }
+
+        .how-it-works h2 {
+            font-size: 36px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            justify-items: center;
+        }
+
+        .step {
+            background: #fafafa;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .step h3 { margin-bottom: 10px; }
+
     </style>
 </head>
 <body>
 
-<h1>Map Extract - Working Test</h1>
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1>Map Extract</h1>
+    <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
 
-<!-- Drag and drop box -->
-<div id="upload-box" class="upload-box">
-    <p>Drag & drop PDF here</p>
-</div>
+    <!-- Drag & Drop Box -->
+    <div id="upload-box" class="upload-box">
+        <p>Drag & drop PDF here</p>
+    </div>
 
-<!-- Select file button (outside of upload box) -->
-<button id="select-pdf" type="button">Select File</button>
+    <!-- VISIBLE FILE INPUT -->
+    <input type="file" id="pdf-upload" accept="application/pdf">
+  </section>
 
-<!-- Hidden file input -->
-<input type="file" id="pdf-upload" accept="application/pdf"
-       style="opacity:0; position:absolute; left:-9999px; width:1px; height:1px;">
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <h3>1. Upload Your Map</h3>
+        <p>Drag and drop or select any map PDF — topographic, historical, scanned, or printed.</p>
+      </div>
+      <div class="step">
+        <h3>2. We Extract the Data</h3>
+        <p>Our processing identifies features, lines, shapes, and text. No software install required.</p>
+      </div>
+      <div class="step">
+        <h3>3. Download Clean Data</h3>
+        <p>Get your extracted output as a clean PNG image ready for GIS or analysis.</p>
+      </div>
+    </div>
+  </section>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
 
-    const selectBtn = document.getElementById('select-pdf');
-    const fileInput = document.getElementById('pdf-upload');
     const uploadBox = document.getElementById('upload-box');
+    const fileInput = document.getElementById('pdf-upload');
 
-    // Button click opens file input
-    selectBtn.addEventListener('click', () => fileInput.click());
-
-    // Drag and drop
-    uploadBox.addEventListener('dragover', (e) => {
+    // Drag & drop
+    uploadBox.addEventListener('dragover', e => {
         e.preventDefault();
         uploadBox.classList.add('dragover');
     });
 
-    uploadBox.addEventListener('dragleave', (e) => {
+    uploadBox.addEventListener('dragleave', e => {
         e.preventDefault();
         uploadBox.classList.remove('dragover');
     });
 
-    uploadBox.addEventListener('drop', (e) => {
+    uploadBox.addEventListener('drop', e => {
         e.preventDefault();
         uploadBox.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
     });
 
     // File input change
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', e => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
 
@@ -101,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const ctx = canvas.getContext('2d');
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-
             await page.render({canvasContext: ctx, viewport: viewport}).promise;
 
             const pngDataUrl = canvas.toDataURL('image/png');
