@@ -1,39 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Map Extract</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 50px auto;
-      padding: 20px;
-      line-height: 1.6;
+      margin: 0;
+      background: #f7f7f7;
+      color: #222;
     }
-    h1 { font-size: 36px; margin-bottom: 10px; }
-    p { font-size: 18px; }
-    .button {
-      display: inline-block;
-      padding: 12px 24px;
-      background: black;
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 20px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.4;
+    }
+
+    .hero button {
+      background: #0070f3;
       color: white;
-      border-radius: 6px;
-      text-decoration: none;
+      padding: 14px 28px;
       font-size: 18px;
-      margin-top: 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* How it works */
+    .how {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 20px;
+    }
+
+    .how h2 {
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 40px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .step {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .step h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    .step p {
+      margin: 0;
+      line-height: 1.4;
     }
   </style>
 </head>
+
 <body>
 
-  <h1>Map Extract</h1>
-  <p>
-    Upload any map PDF and convert it into clean, extracted image layers 
-    for easy analysis and digitization.
-  </p>
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1>Map Extract</h1>
+    <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
+    <button>Upload Map</button>
+  </section>
 
-  <a class="button" href="#">Join Waitlist</a>
+  <!-- HOW IT WORKS -->
+  <section class="how">
+    <h2>How It Works</h2>
+
+    <div class="steps">
+      <div class="step">
+        <h3>1. Upload Your Map</h3>
+        <p>Drag and drop or upload any map image — topographic, historical, scanned, or printed.</p>
+      </div>
+
+      <div class="step">
+        <h3>2. We Extract the Data</h3>
+        <p>Our processing identifies features, lines, shapes, and text. No software install required.</p>
+      </div>
+
+      <div class="step">
+        <h3>3. Download Clean Data</h3>
+        <p>Get your extracted output as a clean image or data-ready file.</p>
+      </div>
+    </div>
+  </section>
 
 </body>
 </html>
