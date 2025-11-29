@@ -45,8 +45,8 @@
             transition: background 0.2s, border-color 0.2s;
         }
 
-        .upload-box:hover {
-            background: #f0f7ff;
+        .upload-box.dragover {
+            background: #e0f0ff;
             border-color: #005fcc;
         }
 
@@ -129,7 +129,7 @@
     <div class="upload-box" id="upload-box">
         <p>Drag & drop PDF here</p>
         <input type="file" id="pdf-upload" accept="application/pdf" style="display:none">
-        <button id="select-pdf">Select File</button>
+        <button type="button" id="select-pdf">Select File</button>
     </div>
 
     <!-- WAITLIST FORM -->
@@ -164,7 +164,7 @@
     <p>&copy; 2025 Map Extract</p>
   </footer>
 
-  <!-- PDF → PNG SCRIPT -->
+  <!-- PDF → PNG SCRIPT WITH DRAG & DROP -->
   <script>
     // Setup pdf.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
@@ -173,15 +173,49 @@
     const fileInput = document.getElementById('pdf-upload');
     const uploadBox = document.getElementById('upload-box');
 
+    // Click handlers
     selectBtn.addEventListener('click', () => fileInput.click());
+    uploadBox.addEventListener('click', () => fileInput.click());
 
-    fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Drag & drop handlers
+    uploadBox.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadBox.classList.add('dragover');
+    });
+
+    uploadBox.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('dragover');
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    // File selection
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    async function handleFile(file) {
+        if (!file || file.type !== 'application/pdf') return;
+
+        // Remove previous messages & links
+        const oldMsg = uploadBox.querySelector('p.processing-msg');
+        if (oldMsg) oldMsg.remove();
+        const oldLink = uploadBox.querySelector('a');
+        if (oldLink) oldLink.remove();
 
         // Show processing message
-        let processingMsg = document.createElement('p');
+        const processingMsg = document.createElement('p');
         processingMsg.textContent = 'Processing PDF...';
+        processingMsg.classList.add('processing-msg');
         uploadBox.appendChild(processingMsg);
 
         const arrayBuffer = await file.arrayBuffer();
@@ -199,9 +233,7 @@
             // Convert canvas to PNG
             const pngDataUrl = canvas.toDataURL('image/png');
 
-            // Remove old link & processing message
-            const oldLink = uploadBox.querySelector('a');
-            if (oldLink) oldLink.remove();
+            // Remove processing message
             processingMsg.remove();
 
             // Create download link
@@ -217,7 +249,7 @@
             processingMsg.textContent = 'Error processing PDF. Please try another file.';
             console.error(err);
         }
-    });
+    }
   </script>
 
 </body>
