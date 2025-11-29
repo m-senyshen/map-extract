@@ -32,21 +32,7 @@
             line-height: 1.5;
         }
 
-        .cta-btn {
-            padding: 14px 28px;
-            background: #0077ff;
-            color: white;
-            font-size: 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .cta-btn:hover {
-            background: #005fcc;
-        }
-
-        /* FAKE UPLOAD BOX */
+        /* UPLOAD BOX */
         .upload-box {
             border: 2px dashed #0077ff;
             border-radius: 12px;
@@ -84,7 +70,7 @@
             background: #005fcc;
         }
 
-        /* HOW IT WORKS SECTION */
+        /* HOW IT WORKS */
         .how-it-works {
             padding: 60px 20px;
             max-width: 900px;
@@ -139,6 +125,7 @@
     <h1>Map Extract</h1>
     <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
 
+    <!-- UPLOAD BOX -->
     <div class="upload-box" id="upload-box">
         <p>Drag & drop PDF here</p>
         <input type="file" id="pdf-upload" accept="application/pdf" style="display:none">
@@ -154,18 +141,15 @@
   <!-- HOW IT WORKS -->
   <section class="how-it-works">
     <h2>How It Works</h2>
-
     <div class="steps">
       <div class="step">
         <h3>1. Upload Your Map</h3>
         <p>Drag and drop or upload any map image — topographic, historical, scanned, or printed.</p>
       </div>
-
       <div class="step">
         <h3>2. We Extract the Data</h3>
         <p>Our processing identifies features, lines, shapes, and text. No software install required.</p>
       </div>
-
       <div class="step">
         <h3>3. Download Clean Data</h3>
         <p>Get your extracted output as a clean image or data-ready file.</p>
@@ -180,8 +164,11 @@
     <p>&copy; 2025 Map Extract</p>
   </footer>
 
-  <!-- PDF → PNG Script -->
+  <!-- PDF → PNG SCRIPT -->
   <script>
+    // Setup pdf.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
+
     const selectBtn = document.getElementById('select-pdf');
     const fileInput = document.getElementById('pdf-upload');
     const uploadBox = document.getElementById('upload-box');
@@ -192,35 +179,44 @@
         const file = e.target.files[0];
         if (!file) return;
 
+        // Show processing message
+        let processingMsg = document.createElement('p');
+        processingMsg.textContent = 'Processing PDF...';
+        uploadBox.appendChild(processingMsg);
+
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+        try {
+            const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({scale: 2});
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
 
-        // Convert only the first page for MVP
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({scale: 2});
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+            await page.render({canvasContext: context, viewport: viewport}).promise;
 
-        await page.render({canvasContext: context, viewport: viewport}).promise;
+            // Convert canvas to PNG
+            const pngDataUrl = canvas.toDataURL('image/png');
 
-        // Convert canvas to PNG
-        const pngDataUrl = canvas.toDataURL('image/png');
+            // Remove old link & processing message
+            const oldLink = uploadBox.querySelector('a');
+            if (oldLink) oldLink.remove();
+            processingMsg.remove();
 
-        // Remove any previous download link
-        const oldLink = uploadBox.querySelector('a');
-        if (oldLink) oldLink.remove();
+            // Create download link
+            const link = document.createElement('a');
+            link.href = pngDataUrl;
+            link.download = file.name.replace('.pdf', '.png');
+            link.textContent = 'Download PNG';
+            link.style.display = 'block';
+            link.style.marginTop = '20px';
 
-        // Create download link
-        const link = document.createElement('a');
-        link.href = pngDataUrl;
-        link.download = file.name.replace('.pdf', '.png');
-        link.textContent = 'Download PNG';
-        link.style.display = 'block';
-        link.style.marginTop = '20px';
-
-        uploadBox.appendChild(link);
+            uploadBox.appendChild(link);
+        } catch (err) {
+            processingMsg.textContent = 'Error processing PDF. Please try another file.';
+            console.error(err);
+        }
     });
   </script>
 
