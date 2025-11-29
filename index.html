@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>Map Extract</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -138,9 +139,10 @@
     <h1>Map Extract</h1>
     <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
 
-    <div class="upload-box">
+    <div class="upload-box" id="upload-box">
         <p>Drag & drop PDF here</p>
-        <button>Select File</button>
+        <input type="file" id="pdf-upload" accept="application/pdf" style="display:none">
+        <button id="select-pdf">Select File</button>
     </div>
 
     <!-- WAITLIST FORM -->
@@ -177,6 +179,50 @@
     <p>Runs entirely in your browser</p>
     <p>&copy; 2025 Map Extract</p>
   </footer>
+
+  <!-- PDF → PNG Script -->
+  <script>
+    const selectBtn = document.getElementById('select-pdf');
+    const fileInput = document.getElementById('pdf-upload');
+    const uploadBox = document.getElementById('upload-box');
+
+    selectBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+
+        // Convert only the first page for MVP
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({scale: 2});
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({canvasContext: context, viewport: viewport}).promise;
+
+        // Convert canvas to PNG
+        const pngDataUrl = canvas.toDataURL('image/png');
+
+        // Remove any previous download link
+        const oldLink = uploadBox.querySelector('a');
+        if (oldLink) oldLink.remove();
+
+        // Create download link
+        const link = document.createElement('a');
+        link.href = pngDataUrl;
+        link.download = file.name.replace('.pdf', '.png');
+        link.textContent = 'Download PNG';
+        link.style.display = 'block';
+        link.style.marginTop = '20px';
+
+        uploadBox.appendChild(link);
+    });
+  </script>
 
 </body>
 </html>
