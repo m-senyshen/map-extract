@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Map Extract</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -88,13 +87,12 @@
         }
 
         .step h3 { margin-bottom: 10px; }
-
     </style>
 </head>
 <body>
 
-  <!-- HERO SECTION -->
-  <section class="hero">
+<!-- HERO SECTION -->
+<section class="hero">
     <h1>Map Extract</h1>
     <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
 
@@ -106,36 +104,42 @@
     <!-- Styled file input button using label -->
     <label for="pdf-upload" class="file-label">Select Your File</label>
     <input type="file" id="pdf-upload" accept="application/pdf" style="display:none;">
+</section>
 
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section class="how-it-works">
+<!-- HOW IT WORKS -->
+<section class="how-it-works">
     <h2>How It Works</h2>
     <div class="steps">
-      <div class="step">
-        <h3>1. Upload Your Map</h3>
-        <p>Drag and drop or select any map PDF — topographic, historical, scanned, or printed.</p>
-      </div>
-      <div class="step">
-        <h3>2. We Extract the Data</h3>
-        <p>Our processing identifies features, lines, shapes, and text. No software install required.</p>
-      </div>
-      <div class="step">
-        <h3>3. Download Clean Data</h3>
-        <p>Get your extracted output as a clean PNG image ready for GIS or analysis.</p>
-      </div>
+        <div class="step">
+            <h3>1. Upload Your Map</h3>
+            <p>Drag and drop or select any map PDF — topographic, historical, scanned, or printed.</p>
+        </div>
+        <div class="step">
+            <h3>2. We Extract the Data</h3>
+            <p>Our processing identifies features, lines, shapes, and text. No software install required.</p>
+        </div>
+        <div class="step">
+            <h3>3. Download Clean Data</h3>
+            <p>Get your extracted output as a clean PNG image ready for GIS or analysis.</p>
+        </div>
     </div>
-  </section>
+</section>
 
+<!-- PDF.js SCRIPT -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    if (!window.pdfjsLib) {
+        alert("PDF.js failed to load. Check your network or CDN.");
+        return;
+    }
+
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
 
     const uploadBox = document.getElementById('upload-box');
     const fileInput = document.getElementById('pdf-upload');
 
-    // DRAG-AND-DROP
+    // Drag-and-drop
     ['dragenter','dragover'].forEach(event => {
         uploadBox.addEventListener(event, e => {
             e.preventDefault();
@@ -156,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
     });
 
-    // FILE INPUT CHANGE
+    // File input
     fileInput.addEventListener('change', e => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
