@@ -41,6 +41,7 @@
             margin: 0 auto;
             text-align: center;
             background: #f9fbff;
+            cursor: pointer;
         }
 
         .upload-box.dragover {
@@ -126,7 +127,8 @@
     <!-- UPLOAD BOX -->
     <div class="upload-box" id="upload-box">
         <p>Drag & drop PDF here</p>
-        <input type="file" id="pdf-upload" accept="application/pdf" style="display:none">
+        <input type="file" id="pdf-upload" accept="application/pdf"
+               style="opacity:0; position:absolute; left:-9999px;">
         <button type="button" id="select-pdf">Select File</button>
     </div>
 
@@ -171,11 +173,8 @@
         const fileInput = document.getElementById('pdf-upload');
         const uploadBox = document.getElementById('upload-box');
 
-        // Button click opens file input
-        selectBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            fileInput.click();
-        });
+        // Button click opens file input (works with opacity:hidden input)
+        selectBtn.addEventListener('click', () => fileInput.click());
 
         // Drag-and-drop
         uploadBox.addEventListener('dragover', (e) => {
@@ -202,7 +201,6 @@
         async function handleFile(file) {
             if (!file || file.type !== 'application/pdf') return;
 
-            // Remove old messages/links
             const oldMsg = uploadBox.querySelector('p.processing-msg');
             if (oldMsg) oldMsg.remove();
             const oldLink = uploadBox.querySelector('a');
