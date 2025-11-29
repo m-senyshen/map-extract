@@ -41,8 +41,6 @@
             margin: 0 auto;
             text-align: center;
             background: #f9fbff;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
         }
 
         .upload-box.dragover {
@@ -164,95 +162,86 @@
     <p>&copy; 2025 Map Extract</p>
   </footer>
 
-  <!-- PDF → PNG SCRIPT (moved to bottom) -->
+  <!-- PDF → PNG SCRIPT -->
   <script>
-    // Setup pdf.js worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
+    document.addEventListener('DOMContentLoaded', () => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
 
-    const selectBtn = document.getElementById('select-pdf');
-    const fileInput = document.getElementById('pdf-upload');
-    const uploadBox = document.getElementById('upload-box');
+        const selectBtn = document.getElementById('select-pdf');
+        const fileInput = document.getElementById('pdf-upload');
+        const uploadBox = document.getElementById('upload-box');
 
-    // Click handlers
-    selectBtn.addEventListener('click', () => fileInput.click());
-    uploadBox.addEventListener('click', (e) => {
-        // avoid triggering if click is on the download link
-        if(e.target.tagName !== 'A') fileInput.click();
-    });
+        // Button click opens file input
+        selectBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
 
-    // Drag & drop handlers
-    uploadBox.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadBox.classList.add('dragover');
-    });
+        // Drag-and-drop
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
 
-    uploadBox.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        uploadBox.classList.remove('dragover');
-    });
+        uploadBox.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+        });
 
-    uploadBox.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadBox.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) {
-            handleFile(e.dataTransfer.files[0]);
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        async function handleFile(file) {
+            if (!file || file.type !== 'application/pdf') return;
+
+            // Remove old messages/links
+            const oldMsg = uploadBox.querySelector('p.processing-msg');
+            if (oldMsg) oldMsg.remove();
+            const oldLink = uploadBox.querySelector('a');
+            if (oldLink) oldLink.remove();
+
+            const processingMsg = document.createElement('p');
+            processingMsg.textContent = 'Processing PDF...';
+            processingMsg.classList.add('processing-msg');
+            uploadBox.appendChild(processingMsg);
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                const page = await pdf.getPage(1);
+                const viewport = page.getViewport({scale: 2});
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({canvasContext: context, viewport: viewport}).promise;
+
+                const pngDataUrl = canvas.toDataURL('image/png');
+                processingMsg.remove();
+
+                const link = document.createElement('a');
+                link.href = pngDataUrl;
+                link.download = file.name.replace('.pdf', '.png');
+                link.textContent = 'Download PNG';
+                link.style.display = 'block';
+                link.style.marginTop = '20px';
+                uploadBox.appendChild(link);
+
+            } catch (err) {
+                processingMsg.textContent = 'Error processing PDF. Please try another file.';
+                console.error(err);
+            }
         }
     });
-
-    // File selection
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFile(e.target.files[0]);
-        }
-    });
-
-    async function handleFile(file) {
-        if (!file || file.type !== 'application/pdf') return;
-
-        // Remove previous messages & links
-        const oldMsg = uploadBox.querySelector('p.processing-msg');
-        if (oldMsg) oldMsg.remove();
-        const oldLink = uploadBox.querySelector('a');
-        if (oldLink) oldLink.remove();
-
-        // Show processing message
-        const processingMsg = document.createElement('p');
-        processingMsg.textContent = 'Processing PDF...';
-        processingMsg.classList.add('processing-msg');
-        uploadBox.appendChild(processingMsg);
-
-        const arrayBuffer = await file.arrayBuffer();
-        try {
-            const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({scale: 2});
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-
-            await page.render({canvasContext: context, viewport: viewport}).promise;
-
-            // Convert canvas to PNG
-            const pngDataUrl = canvas.toDataURL('image/png');
-
-            // Remove processing message
-            processingMsg.remove();
-
-            // Create download link
-            const link = document.createElement('a');
-            link.href = pngDataUrl;
-            link.download = file.name.replace('.pdf', '.png');
-            link.textContent = 'Download PNG';
-            link.style.display = 'block';
-            link.style.marginTop = '20px';
-
-            uploadBox.appendChild(link);
-        } catch (err) {
-            processingMsg.textContent = 'Error processing PDF. Please try another file.';
-            console.error(err);
-        }
-    }
   </script>
 
 </body>
