@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Map Extract - Minimal Test</title>
+    <title>Map Extract - Working Test</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
@@ -12,22 +12,38 @@
             border-radius: 12px;
             display: inline-block;
             cursor: pointer;
+            margin-bottom: 20px;
         }
+        .upload-box.dragover { background: #e0f0ff; border-color: #005fcc; }
         .upload-box p { margin-bottom: 20px; color: #0077ff; font-size: 18px; }
-        .upload-box button { padding: 10px 20px; font-size: 16px; border-radius: 6px; border: none; background:#0077ff; color: white; cursor: pointer; }
-        .upload-box button:hover { background: #005fcc; }
+
+        button#select-pdf {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            background:#0077ff;
+            color: white;
+            cursor: pointer;
+        }
+        button#select-pdf:hover { background: #005fcc; }
     </style>
 </head>
 <body>
 
-<h1>Map Extract - Minimal Test</h1>
+<h1>Map Extract - Working Test</h1>
 
-<div class="upload-box" id="upload-box">
-    <p>Drag & drop PDF here or click the button</p>
-    <input type="file" id="pdf-upload" accept="application/pdf"
-           style="opacity:0; position:absolute; left:-9999px; width:1px; height:1px;">
-    <button type="button" id="select-pdf">Select File</button>
+<!-- Drag and drop box -->
+<div id="upload-box" class="upload-box">
+    <p>Drag & drop PDF here</p>
 </div>
+
+<!-- Select file button (outside of upload box) -->
+<button id="select-pdf" type="button">Select File</button>
+
+<!-- Hidden file input -->
+<input type="file" id="pdf-upload" accept="application/pdf"
+       style="opacity:0; position:absolute; left:-9999px; width:1px; height:1px;">
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,16 +53,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('pdf-upload');
     const uploadBox = document.getElementById('upload-box');
 
-    selectBtn.addEventListener('click', () => {
-        fileInput.click(); // This will now reliably open the file picker
+    // Button click opens file input
+    selectBtn.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop
+    uploadBox.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadBox.classList.add('dragover');
     });
 
-    fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
+    uploadBox.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('dragover');
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+
+    async function handleFile(file) {
         if (!file || file.type !== 'application/pdf') return;
 
-        let processingMsg = document.createElement('p');
+        // Remove old messages or links
+        const oldMsg = uploadBox.querySelector('p.processing-msg');
+        if (oldMsg) oldMsg.remove();
+        const oldLink = uploadBox.querySelector('a');
+        if (oldLink) oldLink.remove();
+
+        const processingMsg = document.createElement('p');
         processingMsg.textContent = 'Processing PDF...';
+        processingMsg.classList.add('processing-msg');
         uploadBox.appendChild(processingMsg);
 
         try {
@@ -58,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const ctx = canvas.getContext('2d');
             canvas.width = viewport.width;
             canvas.height = viewport.height;
+
             await page.render({canvasContext: ctx, viewport: viewport}).promise;
 
             const pngDataUrl = canvas.toDataURL('image/png');
@@ -75,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             processingMsg.textContent = 'Error processing PDF.';
             console.error(err);
         }
-    });
+    }
 });
 </script>
 
