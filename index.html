@@ -44,17 +44,18 @@
 
         .upload-box p { margin-bottom: 20px; color: #0077ff; font-size: 18px; }
 
-        /* VISIBLE FILE INPUT BUTTON */
-        #pdf-upload {
+        /* STYLED FILE INPUT BUTTON */
+        .file-label {
+            display: inline-block;
             padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 6px;
-            border: none;
             background: #0077ff;
             color: white;
+            font-size: 16px;
+            border-radius: 6px;
             cursor: pointer;
+            margin-top: 10px;
         }
-        #pdf-upload:hover { background: #005fcc; }
+        .file-label:hover { background: #005fcc; }
 
         /* HOW IT WORKS SECTION */
         .how-it-works {
@@ -101,8 +102,10 @@
         <p>Drag & drop PDF here</p>
     </div>
 
-    <!-- VISIBLE FILE INPUT -->
-    <input type="file" id="pdf-upload" accept="application/pdf">
+    <!-- Styled file input button using label -->
+    <label for="pdf-upload" class="file-label">Select Your File</label>
+    <input type="file" id="pdf-upload" accept="application/pdf" style="display:none;">
+
   </section>
 
   <!-- HOW IT WORKS -->
