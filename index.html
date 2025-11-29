@@ -162,7 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function handleFile(file) {
-        if (!file || file.type !== 'application/pdf') return;
+        if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
+            alert('Please select a PDF file.');
+            return;
+        }
+
+        console.log('Processing file:', file.name);
 
         // Remove old messages or links
         const oldMsg = uploadBox.querySelector('p.processing-msg');
@@ -178,13 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+            console.log('PDF loaded:', pdf.numPages, 'pages');
+
             const page = await pdf.getPage(1);
+            console.log('Page 1 loaded');
+
             const viewport = page.getViewport({scale: 2});
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = viewport.width;
             canvas.height = viewport.height;
+
             await page.render({canvasContext: ctx, viewport: viewport}).promise;
+            console.log('Page rendered to canvas');
 
             const pngDataUrl = canvas.toDataURL('image/png');
             processingMsg.remove();
@@ -199,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (err) {
             processingMsg.textContent = 'Error processing PDF.';
-            console.error(err);
+            console.error('PDF processing error:', err);
         }
     }
 });
