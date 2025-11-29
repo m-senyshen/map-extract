@@ -45,6 +45,44 @@
             background: #005fcc;
         }
 
+        /* FAKE UPLOAD BOX */
+        .upload-box {
+            border: 2px dashed #0077ff;
+            border-radius: 12px;
+            padding: 50px;
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+            background: #f9fbff;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .upload-box:hover {
+            background: #f0f7ff;
+            border-color: #005fcc;
+        }
+
+        .upload-box p {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #0077ff;
+        }
+
+        .upload-box button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            background: #0077ff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .upload-box button:hover {
+            background: #005fcc;
+        }
+
         /* HOW IT WORKS SECTION */
         .how-it-works {
             padding: 60px 20px;
@@ -85,7 +123,11 @@
   <section class="hero">
     <h1>Map Extract</h1>
     <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
-    <button class="cta-btn">Upload Map</button>
+
+    <div class="upload-box">
+        <p>Drag & drop PDF here</p>
+        <button>Select File</button>
+    </div>
   </section>
 
   <!-- HOW IT WORKS -->
