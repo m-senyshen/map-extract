@@ -164,7 +164,7 @@
     <p>&copy; 2025 Map Extract</p>
   </footer>
 
-  <!-- PDF → PNG SCRIPT WITH DRAG & DROP -->
+  <!-- PDF → PNG SCRIPT (moved to bottom) -->
   <script>
     // Setup pdf.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
@@ -175,7 +175,10 @@
 
     // Click handlers
     selectBtn.addEventListener('click', () => fileInput.click());
-    uploadBox.addEventListener('click', () => fileInput.click());
+    uploadBox.addEventListener('click', (e) => {
+        // avoid triggering if click is on the download link
+        if(e.target.tagName !== 'A') fileInput.click();
+    });
 
     // Drag & drop handlers
     uploadBox.addEventListener('dragover', (e) => {
