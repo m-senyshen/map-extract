@@ -38,6 +38,7 @@
             max-width: 400px;
             margin: 0 auto 20px;
             background: #f9fbff;
+            transition: background 0.2s, border-color 0.2s;
         }
 
         .upload-box.dragover { background: #e0f0ff; border-color: #005fcc; }
@@ -134,24 +135,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadBox = document.getElementById('upload-box');
     const fileInput = document.getElementById('pdf-upload');
 
-    // Drag & drop
-    uploadBox.addEventListener('dragover', e => {
-        e.preventDefault();
-        uploadBox.classList.add('dragover');
+    // DRAG-AND-DROP
+    ['dragenter','dragover'].forEach(event => {
+        uploadBox.addEventListener(event, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.add('dragover');
+        });
     });
 
-    uploadBox.addEventListener('dragleave', e => {
-        e.preventDefault();
-        uploadBox.classList.remove('dragover');
+    ['dragleave','drop'].forEach(event => {
+        uploadBox.addEventListener(event, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadBox.classList.remove('dragover');
+        });
     });
 
     uploadBox.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadBox.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
     });
 
-    // File input change
+    // FILE INPUT CHANGE
     fileInput.addEventListener('change', e => {
         if (e.target.files.length > 0) handleFile(e.target.files[0]);
     });
