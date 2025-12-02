@@ -1,220 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Map Extract</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            text-align: center;
-        }
-
-        /* HERO SECTION */
-        .hero {
-            background: #f0f7ff;
-            padding: 80px 20px;
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        .hero p {
-            font-size: 20px;
-            max-width: 600px;
-            margin: 0 auto 30px;
-        }
-
-        /* UPLOAD BOX */
-        .upload-box {
-            border: 2px dashed #0077ff;
-            border-radius: 12px;
-            padding: 50px;
-            max-width: 400px;
-            margin: 0 auto 20px;
-            background: #f9fbff;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        .upload-box.dragover { background: #e0f0ff; border-color: #005fcc; }
-
-        .upload-box p { margin-bottom: 20px; color: #0077ff; font-size: 18px; }
-
-        /* STYLED FILE INPUT BUTTON */
-        .file-label {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #0077ff;
-            color: white;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .file-label:hover { background: #005fcc; }
-
-        /* HOW IT WORKS SECTION */
-        .how-it-works {
-            padding: 60px 20px;
-            max-width: 900px;
-            margin: 50px auto 0;
-        }
-
-        .how-it-works h2 {
-            font-size: 36px;
-            margin-bottom: 50px;
-            text-align: center;
-        }
-
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            justify-items: center;
-        }
-
-        .step {
-            background: #fafafa;
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid #eee;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .step h3 { margin-bottom: 10px; }
-
-    </style>
+  <meta charset="utf-8" />
+  <title>PDF Test</title>
+  <style>
+    #pdfCanvas {
+      border: 1px solid #000;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
+  <h1>PDF.js Test</h1>
+  <input type="file" id="fileInput" accept="application/pdf" />
+  <canvas id="pdfCanvas"></canvas>
 
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <h1>Map Extract</h1>
-    <p>Upload any map image and get clean, accurate extracted data — ready for GIS, analysis, or digitization.</p>
+  <!-- Load PDF.js from reliable CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js"></script>
 
-    <!-- Drag & Drop Box -->
-    <div id="upload-box" class="upload-box">
-        <p>Drag & drop PDF here</p>
-    </div>
+  <script>
+    // Configure worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js";
 
-    <!-- Styled file input button using label -->
-    <label for="pdf-upload" class="file-label">Select Your File</label>
-    <input type="file" id="pdf-upload" accept="application/pdf" style="display:none;">
+    document.getElementById("fileInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-  </section>
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
 
-  <!-- HOW IT WORKS -->
-  <section class="how-it-works">
-    <h2>How It Works</h2>
-    <div class="steps">
-      <div class="step">
-        <h3>1. Upload Your Map</h3>
-        <p>Drag and drop or select any map PDF — topographic, historical, scanned, or printed.</p>
-      </div>
-      <div class="step">
-        <h3>2. We Extract the Data</h3>
-        <p>Our processing identifies features, lines, shapes, and text. No software install required.</p>
-      </div>
-      <div class="step">
-        <h3>3. Download Clean Data</h3>
-        <p>Get your extracted output as a clean PNG image ready for GIS or analysis.</p>
-      </div>
-    </div>
-  </section>
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.getElementById("pdfCanvas");
+      const ctx = canvas.getContext("2d");
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.15.141/pdf.worker.min.js';
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
 
-    const uploadBox = document.getElementById('upload-box');
-    const fileInput = document.getElementById('pdf-upload');
-
-    // DRAG-AND-DROP
-    ['dragenter','dragover'].forEach(event => {
-        uploadBox.addEventListener(event, e => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadBox.classList.add('dragover');
-        });
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      console.log("PDF rendered!");
     });
-
-    ['dragleave','drop'].forEach(event => {
-        uploadBox.addEventListener(event, e => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadBox.classList.remove('dragover');
-        });
-    });
-
-    uploadBox.addEventListener('drop', e => {
-        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-    });
-
-    // FILE INPUT CHANGE
-    fileInput.addEventListener('change', e => {
-        if (e.target.files.length > 0) handleFile(e.target.files[0]);
-    });
-
-    async function handleFile(file) {
-        if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
-            alert('Please select a PDF file.');
-            return;
-        }
-
-        console.log('Processing file:', file.name);
-
-        // Remove old messages or links
-        const oldMsg = uploadBox.querySelector('p.processing-msg');
-        if (oldMsg) oldMsg.remove();
-        const oldLink = uploadBox.querySelector('a');
-        if (oldLink) oldLink.remove();
-
-        const processingMsg = document.createElement('p');
-        processingMsg.textContent = 'Processing PDF...';
-        processingMsg.classList.add('processing-msg');
-        uploadBox.appendChild(processingMsg);
-
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
-            console.log('PDF loaded:', pdf.numPages, 'pages');
-
-            const page = await pdf.getPage(1);
-            console.log('Page 1 loaded');
-
-            const viewport = page.getViewport({scale: 2});
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-
-            await page.render({canvasContext: ctx, viewport: viewport}).promise;
-            console.log('Page rendered to canvas');
-
-            const pngDataUrl = canvas.toDataURL('image/png');
-            processingMsg.remove();
-
-            const link = document.createElement('a');
-            link.href = pngDataUrl;
-            link.download = file.name.replace('.pdf', '.png');
-            link.textContent = 'Download PNG';
-            link.style.display = 'block';
-            link.style.marginTop = '20px';
-            uploadBox.appendChild(link);
-
-        } catch (err) {
-            processingMsg.textContent = 'Error processing PDF.';
-            console.error('PDF processing error:', err);
-        }
-    }
-});
-</script>
-
+  </script>
 </body>
 </html>
